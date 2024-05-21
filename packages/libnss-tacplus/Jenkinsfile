@@ -1,0 +1,64 @@
+// Copyright (C) 2020-2024 VyOS maintainers and contributors
+//
+// This program is free software; you can redistribute it and/or modify
+// in order to easy exprort images built to "external" world
+// it under the terms of the GNU General Public License version 2 or later as
+// published by the Free Software Foundation.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+@NonCPS
+
+// Using a version specifier library, use 'sagitta' branch. The underscore (_)
+// is not a typo! You need this underscore if the line immediately after the
+// @Library annotation is not an import statement!
+@Library('vyos-build@sagitta')_
+
+def pkgList = [
+    // libnss-tacplus
+    ['name': 'libnss-tacplus',
+     'buildCmd': '''
+        # all scripts must be executed one level above ...
+        cd ..
+
+        # Build dependency
+        wget https://download.nvidia.com/cumulus/apt.cumulusnetworks.com/repo/pool/cumulus/libt/libtacplus-map/libtacplus-map_1.0.1-cl5.1.0u9.tar.gz
+        mkdir pkg-libtacplus-map && tar -C pkg-libtacplus-map -xf libtacplus-map_*.tar.gz
+        cd pkg-libtacplus-map/source
+        sudo mk-build-deps --install --tool "apt-get --yes --no-install-recommends"
+        # Make it buildable for newer gcc version:
+        # https://stackoverflow.com/questions/47185819/building-debian-ubuntu-packages-with-old-gcc-cflag-adjustment
+        # map_tacplus_user.c:388:31: error: the comparison will always evaluate as 'true' for the address of 'tac_mappedname' will never be NULL [-Werror=address]
+        # man 1 dpkg-buildflags
+        export DEB_CFLAGS_APPEND="-Wno-address -Wno-stringop-truncation"
+        dpkg-buildpackage -uc -us -tc -b
+        cd ../../
+
+        sudo dpkg -i pkg-libtacplus-map/*.deb
+
+        # Build dependency
+        wget https://download.nvidia.com/cumulus/apt.cumulusnetworks.com/repo/pool/cumulus/libp/libpam-tacplus/libpam-tacplus_1.4.3-cl5.1.0u5.tar.gz
+        mkdir pkg-libpam-tacplus && tar -C pkg-libpam-tacplus -xf libpam-tacplus_*.tar.gz
+        cd pkg-libpam-tacplus/source
+        sudo mk-build-deps --install --tool "apt-get --yes --no-install-recommends"
+        dpkg-buildpackage -uc -us -tc -b
+        cd ../../
+
+        sudo dpkg -i pkg-libpam-tacplus/*.deb
+
+        wget https://download.nvidia.com/cumulus/apt.cumulusnetworks.com/repo/pool/cumulus/libn/libnss-tacplus/libnss-tacplus_1.0.4-cl5.1.0u11.tar.gz
+        # Unpack Kernel source
+        mkdir pkg-libnss-tacplus && tar -C pkg-libnss-tacplus -xf libnss-tacplus_*.tar.gz
+        cd pkg-libnss-tacplus/source
+        sudo mk-build-deps --install --tool "apt-get --yes --no-install-recommends"
+        dpkg-buildpackage -uc -us -tc -b
+     '''],
+]
+
+// Start package build using library function from https://github.com/vyos/vyos-build
+buildPackage('libnss-tacplus', pkgList, null, true, "**/packages/libnss-tacplus/**")

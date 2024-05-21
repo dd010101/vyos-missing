@@ -19,13 +19,17 @@
 // @Library annotation is not an import statement!
 @Library('vyos-build@sagitta')_
 
-// v1.300034.0 2024-03-15: commit id 2ad5e3a
+// https://wiki.fd.io/view/VPP/Pulling,_Building,_Running,_Hacking_and_Pushing_VPP_Code
+// https://wiki.fd.io/view/VPP/Build,_install,_and_test_images#Build_A_VPP_Package
 def pkgList = [
-    ['name': "amazon-cloudwatch-agent",
-     'scmCommit': '2ad5e3a',
-     'scmUrl': 'https://github.com/aws/amazon-cloudwatch-agent',
-     'buildCmd': "make prepackage package-deb"],
+    ['name': "vpp",
+     'scmCommit': 'v24.02',
+     'scmUrl': 'https://gerrit.fd.io/r/vpp',
+     'buildCmd': '''sudo apt-get update -y
+                    sudo apt-get install -y llvm clang
+                    export UNATTENDED=y
+                    make install-dep && make install-ext-deps && make pkg-deb'''],
 ]
 
 // Start package build using library function from https://github.com/vyos/vyos-build
-buildPackage('amazon-cloudwatch-agent', pkgList, null, true, "**/packages/amazon-cloudwatch-agent/**")
+buildPackage('vpp', pkgList, null, true, "**/packages/vpp/**")
