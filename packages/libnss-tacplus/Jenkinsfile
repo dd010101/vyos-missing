@@ -22,42 +22,7 @@
 def pkgList = [
     // libnss-tacplus
     ['name': 'libnss-tacplus',
-     'buildCmd': '''
-        # all scripts must be executed one level above ...
-        cd ..
-
-        # Build dependency
-        wget https://download.nvidia.com/cumulus/apt.cumulusnetworks.com/repo/pool/cumulus/libt/libtacplus-map/libtacplus-map_1.0.1-cl5.1.0u9.tar.gz
-        mkdir pkg-libtacplus-map && tar -C pkg-libtacplus-map -xf libtacplus-map_*.tar.gz
-        cd pkg-libtacplus-map/source
-        sudo mk-build-deps --install --tool "apt-get --yes --no-install-recommends"
-        # Make it buildable for newer gcc version:
-        # https://stackoverflow.com/questions/47185819/building-debian-ubuntu-packages-with-old-gcc-cflag-adjustment
-        # map_tacplus_user.c:388:31: error: the comparison will always evaluate as 'true' for the address of 'tac_mappedname' will never be NULL [-Werror=address]
-        # man 1 dpkg-buildflags
-        export DEB_CFLAGS_APPEND="-Wno-address -Wno-stringop-truncation"
-        dpkg-buildpackage -uc -us -tc -b
-        cd ../../
-
-        sudo dpkg -i pkg-libtacplus-map/*.deb
-
-        # Build dependency
-        wget https://download.nvidia.com/cumulus/apt.cumulusnetworks.com/repo/pool/cumulus/libp/libpam-tacplus/libpam-tacplus_1.4.3-cl5.1.0u5.tar.gz
-        mkdir pkg-libpam-tacplus && tar -C pkg-libpam-tacplus -xf libpam-tacplus_*.tar.gz
-        cd pkg-libpam-tacplus/source
-        sudo mk-build-deps --install --tool "apt-get --yes --no-install-recommends"
-        dpkg-buildpackage -uc -us -tc -b
-        cd ../../
-
-        sudo dpkg -i pkg-libpam-tacplus/*.deb
-
-        wget https://download.nvidia.com/cumulus/apt.cumulusnetworks.com/repo/pool/cumulus/libn/libnss-tacplus/libnss-tacplus_1.0.4-cl5.1.0u11.tar.gz
-        # Unpack Kernel source
-        mkdir pkg-libnss-tacplus && tar -C pkg-libnss-tacplus -xf libnss-tacplus_*.tar.gz
-        cd pkg-libnss-tacplus/source
-        sudo mk-build-deps --install --tool "apt-get --yes --no-install-recommends"
-        dpkg-buildpackage -uc -us -tc -b
-     '''],
+     'buildCmd': 'cd ..; ./build.sh'],
 ]
 
 // Start package build using library function from https://github.com/vyos/vyos-build
