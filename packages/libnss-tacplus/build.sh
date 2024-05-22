@@ -1,3 +1,6 @@
+#!/bin/sh
+set -e
+
 # Build and install libtacplus-map dependency
 git clone https://github.com/vyos/libtacplus-map.git
 cd libtacplus-map
