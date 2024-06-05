@@ -1,0 +1,69 @@
+// Copyright (C) 2020-2024 VyOS maintainers and contributors
+//
+// This program is free software; you can redistribute it and/or modify
+// in order to easy exprort images built to 'external' world
+// it under the terms of the GNU General Public License version 2 or later as
+// published by the Free Software Foundation.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+@NonCPS
+
+// Using a version specifier library, use 'equuleus' branch. The underscore (_)
+// is not a typo! You need this underscore if the line immediately after the
+// @Library annotation is not an import statement!
+@Library('vyos-build@equuleus')_
+
+pipeline {
+	agent none
+	options {
+		disableConcurrentBuilds()
+		timeout(time: 240, unit: 'MINUTES')
+		timestamps()
+		buildDiscarder(logRotator(numToKeepStr: '10'))
+	}
+	stages {
+		stage('Build') {
+			agent {
+				label "ec2_amd64"
+			}
+			when {
+				anyOf {
+					changeset pattern: "**", caseSensitive: true
+					triggeredBy cause: "UserIdCause"
+				}
+			}
+			steps {
+				script {
+					// Checkout git repository which hold 'Jenkinsfile'
+					checkout scm
+
+					// Display Git commit Id used with the Jenkinsfile on the Job 'Build History' pane
+					def commitId = sh(returnStdout: true, script: 'git rev-parse --short=11 HEAD').trim()
+					currentBuild.description = 'Git SHA1: ' + commitId
+
+					// Fetch sources and build docker image
+					dir(getJenkinsfilePath() + 'vyos-build') {
+						checkout([$class: 'GitSCM',
+							doGenerateSubmoduleConfigurations: false,
+							extensions: [[$class: 'CleanCheckout']],
+							branches: [[name: env.BRANCH_NAME]],
+							userRemoteConfigs: [[url: 'https://github.com/dd010101/vyos-build.git']]])
+
+						sh 'cd ..; ./build.sh'
+					}
+				}
+			}
+			post {
+				cleanup {
+					deleteDir()
+				}
+			}
+		}
+	}
+}
