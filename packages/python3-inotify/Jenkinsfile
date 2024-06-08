@@ -21,7 +21,7 @@
 
 def pkgList = [
     ['name': "python3-inotify",
-     'scmCommit': 'debian/0.2.10-1',
+     'scmCommit': 'debian/0.2.10-3',
      'scmUrl': 'https://salsa.debian.org/python-team/packages/python-inotify.git',
      'buildCmd': '''pwd=`pwd`
 
