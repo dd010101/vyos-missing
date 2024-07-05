@@ -25,5 +25,10 @@ def pkgList = [
      'buildCmd': 'cd ..; ./build.sh'],
 ]
 
+// This package builds all three dependencies
+// libnss-tacplus
+// libtacplus-map
+// libpam-tacplus
+
 // Start package build using library function from https://github.com/vyos/vyos-build
 buildPackage('libnss-tacplus', pkgList, null, true, "**/packages/libnss-tacplus/**")
