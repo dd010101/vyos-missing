@@ -27,6 +27,7 @@ def pkgList = [
      'buildCmd': """
 		 git submodule init
 		 git submodule update
+		 ../hack.sh
 		 ./builder/build.sh -m recursor -V ${pdnsRecursorVersion} -v debian-buster-amd64
      """],
 ]
